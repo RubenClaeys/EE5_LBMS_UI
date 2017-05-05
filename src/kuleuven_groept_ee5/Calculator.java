@@ -83,7 +83,7 @@ public class Calculator {
 			switch(range){
 			case FIVE:
 			case EIGHT:
-				Main.getUi().getOscilloscoop().changeDataset(doubleSamples, 10);
+				Main.getUi().getOscilloscoop().changeDataset(doubleSamples);
 			case THIRTY:
 				Main.getUi().getOutputArea().append(round(doubleSamples[i],3) + "V"  + "\n");
 				break;

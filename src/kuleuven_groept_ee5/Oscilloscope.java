@@ -22,6 +22,9 @@ public class Oscilloscope {
 	private JTextField valueZoomX;
 	private DefaultCategoryDataset dataset;
 	private double zoomX;
+	private int frequency;
+	private int[] freqData;
+	private String axis;
 	
 	public JFrame getFrame(){
 		return frmOscilloscope;
@@ -41,6 +44,7 @@ public class Oscilloscope {
 	 */
 	private void initialize() {
 		zoomX=1;
+		frequency=1;
 		
 		frmOscilloscope = new JFrame();
 		frmOscilloscope.setTitle("Oscilloscope");
@@ -75,8 +79,8 @@ public class Oscilloscope {
 		JButton btnStart = new JButton(" data");
 		btnStart.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				double[] data={-5,-4,-3,-2,-1,01,2,3,4,5};
-				changeDataset(data,1);
+				double[] data={-5,-4,-3,-2,-1,0,1,2,3,4,5};
+				changeDataset(data);
 			}
 		});
 		btnStart.setBounds(315, 625, 159, 23);
@@ -120,10 +124,68 @@ public class Oscilloscope {
 		slXScaleZ.setBounds(680, 100, 25, 140);
 		frmOscilloscope.getContentPane().add(slXScaleZ);
 		
+		JSlider slFScale= new JSlider(JSlider.HORIZONTAL,1,10,1);
+		slFScale.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+				JSlider source= (JSlider)e.getSource();
+				if(!source.getValueIsAdjusting()){
+					int scale=(int) source.getValue();
+					switch(scale){
+					case 1:
+						frequency=1;break;
+					case 2:
+						frequency=10;break;
+					case 3:
+						frequency=50;break;
+					case 4:
+						frequency=100;break;
+					case 5:
+						frequency=200;break;
+					case 6:
+						frequency=500;break;
+					case 7:
+						frequency=1000;break;
+					case 8:
+						frequency=2000;break;
+					case 9:
+						frequency=5000;break;
+					case 10:
+						frequency=10000;break;
+					}
+				}
+			}
+
+			
+		});
+		slFScale.setVisible(true);
+		slFScale.setBounds(650, 400, 140, 25);
+		frmOscilloscope.getContentPane().add(slFScale);
+		
 		valueZoomX=new JTextField(String.valueOf(zoomX));
 		valueZoomX.setEditable(false);;
 		valueZoomX.setBounds(650, 250,70, 23);
 		frmOscilloscope.getContentPane().add(valueZoomX);
+	}
+	
+	private void changeFreqData(int size) {
+		freqData=new int[size];
+		for(int i=0; i<size ;i++){
+			if(frequency==1){
+				freqData[i]=i;
+			}
+			else if(frequency<=100){
+				freqData[i]=i/frequency;
+				axis="s";
+			}
+			else if(frequency<=1000){
+				freqData[i]=(i*1000)/frequency;
+				axis="ms";
+			}
+			else if(frequency<=10000){
+				freqData[i]=(i*1000)/frequency;
+				axis="ms";
+			}
+		}
 	}
 	
 	protected void setContentPane(ChartPanel chartPanel2) {
@@ -144,16 +206,12 @@ public class Oscilloscope {
 	      return dataset;
 	   }
 	
-	public void changeDataset(double[] data, int frequency){
+	public void changeDataset(double[] data){
+		axis="s";
+		changeFreqData(data.length);
 		dataset = new DefaultCategoryDataset();
-		String axis="s";
 		for(int i=0;i<= data.length-1;i++){
-			double key=i/frequency;
-			if(key < 1){
-				key=key*100;
-				axis="ms";
-			}
-			dataset.addValue(data[i], "Channel1", Integer.toString((int) key));
+			dataset.addValue(data[i], "Channel1", Integer.toString(freqData[i]));
 		}
 		JFreeChart lineChart = ChartFactory.createLineChart("GAFA", axis, "Volt", dataset);	
 		chartPanel.setChart(lineChart);
