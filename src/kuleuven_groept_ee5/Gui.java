@@ -144,7 +144,7 @@ public class Gui {
 			}
 		});
 		btnChart.setVisible(true);
-		btnChart.setBounds(380, 250, 120, 20);
+		btnChart.setBounds(450, 250, 120, 20);
 		frame.getContentPane().add(btnChart);
 	}
 	
@@ -181,4 +181,9 @@ public class Gui {
 	public JFrame getFrame(){
 		return frame;
 	}
+	
+	public Oscilloscope getOscilloscoop(){
+		return chart;
+	}
+	
 }
