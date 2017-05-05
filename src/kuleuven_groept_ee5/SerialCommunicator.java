@@ -179,7 +179,7 @@ public class SerialCommunicator {
 					}
 					break;
 				default:
-					
+					break;
 						
 				}
 			}
