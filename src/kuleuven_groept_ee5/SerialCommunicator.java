@@ -27,6 +27,7 @@ public class SerialCommunicator {
 	private Mode mode = null;
 	private BlockingQueue<Integer> queue = null;
 	private ArrayList<Integer> samplesAD = new ArrayList<Integer>(5);  
+	private int capacity = 100;
 
 	private volatile boolean shutdown = false;
 	
@@ -103,7 +104,7 @@ public class SerialCommunicator {
 	// Creates two threads which synchronious fill/empty a queue
 	public void startThreads() throws InterruptedException{
 			shutdown = false;
-			queue = new ArrayBlockingQueue<Integer>(100);
+			queue = new ArrayBlockingQueue<Integer>(capacity);
 			
 			Thread producerThread = new Thread(new Runnable(){
 				@Override
@@ -136,52 +137,56 @@ public class SerialCommunicator {
 	}
 	
 	// reads data from the serialPort and adds it to the queue
-	public void producer() throws InterruptedException{
+	public synchronized void producer() throws InterruptedException{
 		while(!shutdown){
-
-//			System.out.println("Producer: " + Thread.currentThread());
-
-			try {
-				int data;
-				while ((data = inputStream.read()) > -1) {
-					System.out.println(data);
-					queue.add(data);
+			
+				try {
+					int data;
+					while((data = inputStream.read()) > -1) {
+						System.out.println(data);
+						if(queue.size() != (capacity-1)){
+							queue.add(data);
+						}
+						
+					}
+				}
+				catch (IOException e) {
+					Main.getUi().getOutputArea().setForeground(Color.red);
+					Main.getUi().getOutputArea().append("There was an error while reading data.. (" + e.toString() + ")" + "\n");
+					Main.getUi().getOutputArea().setCaretPosition(Main.getUi().getOutputArea().getDocument().getLength());
 				}
 			}
-			catch (IOException e) {
-				Main.getUi().getOutputArea().setForeground(Color.red);
-				Main.getUi().getOutputArea().append("There was an error while reading data.. (" + e.toString() + ")" + "\n");
-				Main.getUi().getOutputArea().setCaretPosition(Main.getUi().getOutputArea().getDocument().getLength());
-			}
-		}
+		
+
 	}
 	
 	//takes data out of the queue in a FIFO order
 	//in single mode just one sample is taken and send to calculate
 	//in continu mode the data is send in bursts of 10 samples
-	public void consumer() throws InterruptedException{
+	public synchronized void  consumer() throws InterruptedException{
 		while(!shutdown){
 
-//			System.out.println("Consumer: " + Thread.currentThread());
-			
 			if(mode != null){
 				switch(mode){
 				case SINGLE:
 					samplesAD.clear();
 					samplesAD.add(queue.take());
+					
 					Main.getCalc().calculate(samplesAD);
 					break;
 				case CONTINU:
 					if(queue.size() >= 10){
 						queue.drainTo(samplesAD, 10);
+						
 						Main.getCalc().calculate(samplesAD);
 						samplesAD.clear();
 					}
 					break;
 				default:
-					
+					break;
 						
 				}
+				
 			}
 		}
 	}
