@@ -20,6 +20,7 @@ public class Gui {
 	private JComboBox<String> portSelect;
 	private JComboBox<Mode> modeSelect;
 	private JComboBox<Range> rangeSelect;
+	private Oscilloscope chart;
 
 	public Gui() {
 		initialize();
@@ -131,7 +132,23 @@ public class Gui {
 		scrollPane.setBounds(20, 240, 400, 150);
 		frame.getContentPane().add(scrollPane);
 		
+		JButton btnChart = new JButton("Oscilloscope");
+		btnChart.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent arg0) {
+				try {
+					chart = new Oscilloscope();
+					chart.getFrame().setVisible(true);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
+		btnChart.setVisible(true);
+		btnChart.setBounds(380, 250, 120, 20);
+		frame.getContentPane().add(btnChart);
 	}
+	
+
 
 	public void updateMode(){
 		Range range = (Range) getSelectedRange().getSelectedItem();
