@@ -86,6 +86,20 @@ public class Oscilloscope {
 		btnStart.setBounds(315, 625, 159, 23);
 		frmOscilloscope.getContentPane().add(btnStart);
 		
+		JTextField valueStop=new JTextField("Running");
+		valueStop.setEditable(false);;
+		valueStop.setBounds(450,650,70, 23);
+		frmOscilloscope.getContentPane().add(valueStop);
+		
+		JButton btnStop = new JButton("STOP");
+		btnStop.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				Main.getCalc().setStop(!Main.getCalc().getStop());
+			}
+		});
+		btnStop.setBounds(500, 625, 159, 23);
+		frmOscilloscope.getContentPane().add(btnStop);
+		
 		JSlider slXScale= new JSlider(JSlider.VERTICAL,1,10,2);
 		slXScale.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
@@ -105,6 +119,8 @@ public class Oscilloscope {
 		slXScale.setBounds(650, 100, 25, 140);
 		frmOscilloscope.getContentPane().add(slXScale);
 		
+		
+		
 		JSlider slXScaleZ= new JSlider(JSlider.VERTICAL,1,10,1);
 		
 		slXScaleZ.addChangeListener(new ChangeListener() {
@@ -123,6 +139,11 @@ public class Oscilloscope {
 		slXScaleZ.setVisible(true);
 		slXScaleZ.setBounds(680, 100, 25, 140);
 		frmOscilloscope.getContentPane().add(slXScaleZ);
+		
+		JTextField valueFreq=new JTextField(String.valueOf(frequency));
+		valueFreq.setEditable(false);;
+		valueFreq.setBounds(650,450,70, 23);
+		frmOscilloscope.getContentPane().add(valueFreq);
 		
 		JSlider slFScale= new JSlider(JSlider.HORIZONTAL,1,10,1);
 		slFScale.addChangeListener(new ChangeListener() {
@@ -152,6 +173,7 @@ public class Oscilloscope {
 					case 10:
 						frequency=10000;break;
 					}
+					valueFreq.setText(String.valueOf(frequency));
 				}
 			}
 
@@ -174,16 +196,16 @@ public class Oscilloscope {
 				freqData[i]=i;
 			}
 			else if(frequency<=100){
-				freqData[i]=i/frequency;
-				axis="s";
+				freqData[i]=i*(1000/frequency);
+				axis="ms";
 			}
 			else if(frequency<=1000){
-				freqData[i]=(i*1000)/frequency;
+				freqData[i]=i*(1000/frequency);
 				axis="ms";
 			}
 			else if(frequency<=10000){
-				freqData[i]=(i*1000)/frequency;
-				axis="ms";
+				freqData[i]=(i*1000000)/frequency;
+				axis="µs";
 			}
 		}
 	}

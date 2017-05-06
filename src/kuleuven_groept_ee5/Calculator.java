@@ -7,6 +7,7 @@ import java.util.ArrayList;
 public class Calculator {
 
 	private Range range;
+	private Boolean stop=false;
 
 	public void setRange(Range range) {
 		this.range = range;
@@ -83,7 +84,9 @@ public class Calculator {
 			switch(range){
 			case FIVE:
 			case EIGHT:
-				Main.getUi().getOscilloscoop().changeDataset(doubleSamples);
+				if(!stop){
+					Main.getUi().getOscilloscoop().changeDataset(doubleSamples);
+				}
 			case THIRTY:
 				Main.getUi().getOutputArea().append(round(doubleSamples[i],3) + "V"  + "\n");
 				break;
@@ -107,5 +110,12 @@ public class Calculator {
 		return bd.doubleValue();
 	}
 
-
+	public void setStop(boolean temp){
+		stop=temp;
+	}
+	
+	public boolean getStop(){
+		return stop;
+	}
+	
 }
