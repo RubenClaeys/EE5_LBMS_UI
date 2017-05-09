@@ -183,6 +183,7 @@ public class Gui {
 	}
 	
 	public Oscilloscope getOscilloscoop(){
+		System.out.println("The oscilloscoop is returned to the code");
 		return chart;
 	}
 	

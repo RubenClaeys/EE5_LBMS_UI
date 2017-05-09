@@ -85,6 +85,7 @@ public class Calculator {
 			case FIVE:
 			case EIGHT:
 				if(!stop){
+					System.out.println("Samples are transfered to the oscilloscoop");
 					Main.getUi().getOscilloscoop().changeDataset(doubleSamples);
 				}
 			case THIRTY:
