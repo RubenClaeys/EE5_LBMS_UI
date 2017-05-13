@@ -48,7 +48,7 @@ public class Oscilloscope {
 		
 		frmOscilloscope = new JFrame();
 		frmOscilloscope.setTitle("Oscilloscope");
-		frmOscilloscope.setBounds(100, 100, 800, 700);
+		frmOscilloscope.setBounds(770, 100, 800, 700);
 		frmOscilloscope.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frmOscilloscope.getContentPane().setLayout(null);
 		
@@ -229,17 +229,17 @@ public class Oscilloscope {
 	   }
 	
 	public void changeDataset(double[] data){
-		System.out.println("function is started");
+
 		axis="s";
 		changeFreqData(data.length);
 		dataset = new DefaultCategoryDataset();
 		for(int i=0;i<= data.length-1;i++){
 			dataset.addValue(data[i], "Channel1", Integer.toString(freqData[i]));
 		}
-		System.out.println("dataset is changed");
+		
 		JFreeChart lineChart = ChartFactory.createLineChart("GAFA", axis, "Volt", dataset);	
 		chartPanel.setChart(lineChart);
-		System.out.println("char is updateted");
+		chartPanel.zoomInRange( 0,0 );
 	}
 	
 	private DefaultCategoryDataset createDataset2( ) {
