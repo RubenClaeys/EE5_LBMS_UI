@@ -12,6 +12,7 @@ public class Main {
 		
 		communicator = new SerialCommunicator();
 		calc = new Calculator();
+		
 
 	}
 	

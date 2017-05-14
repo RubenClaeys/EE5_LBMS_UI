@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
+
 import gnu.io.CommPort;
 import gnu.io.CommPortIdentifier;
 import gnu.io.PortInUseException;
@@ -25,12 +26,20 @@ public class SerialCommunicator {
 	private OutputStream outputStream = null;
 	private Range range = null;
 	private Mode mode = null;
+	private SampleFrequency sampleFr = null;
 	private BlockingQueue<Integer> queue = null;
-	private ArrayList<Integer> samplesAD = new ArrayList<Integer>(5);  
+	private ArrayList<Integer> samplesAD = new ArrayList<Integer>();  
 	private int capacity = 100;
+	private int i = 0;
 
 	private volatile boolean shutdown = false;
 	
+	public SerialCommunicator(){
+		searchForPorts();
+		mode =(Mode) Main.getUi().getSelectedMode().getSelectedItem();
+		range = (Range) Main.getUi().getSelectedRange().getSelectedItem();
+		sampleFr = (SampleFrequency) Main.getUi().getSampleFrequency().getSelectedItem();
+	}
 	
 	// Searches for ports and displays them in combobox
 	public void searchForPorts() {
@@ -110,11 +119,11 @@ public class SerialCommunicator {
 				@Override
 				public void run() {
 					try {
+						Thread.sleep(10);
 						producer();
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
-
 				}
 			});
 
@@ -130,25 +139,38 @@ public class SerialCommunicator {
 				}
 
 			});
-
-			producerThread.start();
+			
 			consumerThread.start();
-
+			producerThread.start();
+			
 	}
 	
 	// reads data from the serialPort and adds it to the queue
-	public synchronized void producer() throws InterruptedException{
+	public void producer() throws InterruptedException{
 		while(!shutdown){
-			
+//			System.out.println("Thread producer: " + Thread.currentThread().getName());
 				try {
+					
 					int data;
-					while((data = inputStream.read()) > -1) {
-						System.out.println(data);
-						if(queue.size() != (capacity-1)){
-							queue.add(data);
+					long begin =0;
+					long end = 0;
+					
+					while((data = inputStream.read()) > -1  ) {
+						if(i == 0){begin = System.currentTimeMillis();}
+						i++;
+						if(i == 10){
+							end = System.currentTimeMillis();
+							long time = (end - begin)/10;
+							long freq = 1/time;	
+							Main.getUi().getOutputArea().append(freq + "\n");
 						}
-						
-					}
+						System.out.println(data);
+						if(queue.size() < capacity)
+							queue.add(data);
+							break;
+						}
+					
+					
 				}
 				catch (IOException e) {
 					Main.getUi().getOutputArea().setForeground(Color.red);
@@ -156,38 +178,16 @@ public class SerialCommunicator {
 					Main.getUi().getOutputArea().setCaretPosition(Main.getUi().getOutputArea().getDocument().getLength());
 				}
 			}
-		
-
 	}
 	
 	//takes data out of the queue in a FIFO order
 	//in single mode just one sample is taken and send to calculate
 	//in continu mode the data is send in bursts of 10 samples
-	public synchronized void  consumer() throws InterruptedException{
+	public void consumer() throws InterruptedException{
+		
 		while(!shutdown){
-
-			if(mode != null){
-				switch(mode){
-				case SINGLE:
-					samplesAD.clear();
-					samplesAD.add(queue.take());
-					
-					Main.getCalc().calculate(samplesAD);
-					break;
-				case CONTINU:
-					if(queue.size() >= 10){
-						queue.drainTo(samplesAD, 10);
-						
-						Main.getCalc().calculate(samplesAD);
-						samplesAD.clear();
-					}
-					break;
-				default:
-					break;
-						
-				}
-				
-			}
+			int sample = queue.take();
+			Main.getCalc().addSample(sample);
 		}
 	}
 	
@@ -201,14 +201,14 @@ public class SerialCommunicator {
 			}
 
 			else if (data.equals("H")) {
-				byte[] buffer = new byte[2];
-				buffer[1] = generateHeader();
+				byte[] buffer = new byte[3];
 				buffer[0] = 0x48;
+				buffer[1] = generateHeader1();
+				buffer[2] = generateHeader2();
 				outputStream.write(buffer, 0, buffer.length);
 			} else {
 				byte[] buffer = data.getBytes();
 				outputStream.write(buffer, 0, buffer.length);
-
 			}
 
 		} catch (IOException e) {
@@ -219,7 +219,7 @@ public class SerialCommunicator {
 	}
 	
 	//Generates header byte when a different mode selected and the save button is clicked
-	public byte generateHeader() {
+	public byte generateHeader1() {
 		byte b = 0x00;
 		
 		switch (mode) {
@@ -233,6 +233,9 @@ public class SerialCommunicator {
 				break;
 			case SEVENFIFTY:
 				b = 0x21;
+				break;
+			case EIGHT:
+				b=0x31;
 				break;
 			default:
 				b = 0x01;
@@ -251,6 +254,9 @@ public class SerialCommunicator {
 			case SEVENFIFTY:
 				b = 0x22;
 				break;
+			case EIGHT:
+				b=0x32;
+				break;
 			default:
 				b = 0x02;
 				break;
@@ -263,6 +269,65 @@ public class SerialCommunicator {
 		}
 		return b;
 	}
+	
+	public byte generateHeader2(){
+		byte b = 0x00;
+		
+		switch(sampleFr){
+		case ONE:
+			b = 0x00;
+			break;
+			
+		case TEN:
+			b = 0x01;
+			break;
+			
+		case HUNDRED:
+			b = 0x02;
+			break;
+			
+		case TWO_H:
+			b = 0x03;
+			break;
+			
+		case FIVE_H:
+			b = 0x04;
+			break;
+			
+		case ONE_K:
+			b = 0x05;
+			break;
+			
+		case TWO_K:
+			b = 0x06;
+			break;
+			
+		case FIVE_K:
+			b = 0x07;
+			break;
+			
+		case TEN_K:
+			b = 0x08;
+			break;
+			
+		case TWENTYFIVE_K:
+			b = 0x09;
+			break;
+			
+		case FIFTY_K:
+			b = 0x0A;
+			break;
+			
+		case SEVENTYFIVE_K:
+			b = 0x0B;
+			break;
+			
+		default:
+			b = 0x00;
+			break;
+		}
+		return b;
+	}
 
 	public void setRange(Range range) {
 		this.range = range;
@@ -270,5 +335,9 @@ public class SerialCommunicator {
 
 	public void setMode(Mode mode) {
 		this.mode = mode;
+	}
+	
+	public void setSampleFr(SampleFrequency sampleFr){
+		this.sampleFr = sampleFr;
 	}
 }

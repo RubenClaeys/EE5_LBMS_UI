@@ -20,6 +20,7 @@ public class Gui {
 	private JComboBox<String> portSelect;
 	private JComboBox<Mode> modeSelect;
 	private JComboBox<Range> rangeSelect;
+	private JComboBox<SampleFrequency> sampleFrequency;
 	private Oscilloscope chart;
 
 	public Gui() {
@@ -28,7 +29,7 @@ public class Gui {
 
 	private void initialize() {
 		frame = new JFrame();
-		frame.setBounds(100, 100, 600, 500);
+		frame.setBounds(100, 100, 660, 500);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(null);
 
@@ -83,7 +84,11 @@ public class Gui {
 		rangeSelect = new JComboBox<Range>(Range.values());
 		rangeSelect.setBounds(140, 110, 100, 20);
 		frame.getContentPane().add(rangeSelect);
-
+		
+		sampleFrequency = new JComboBox<>(SampleFrequency.values());
+		sampleFrequency.setBounds(260,110,120,20);
+		frame.getContentPane().add(sampleFrequency);
+		
 		JButton btnSave = new JButton("Save");
 		btnSave.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -91,7 +96,7 @@ public class Gui {
 				Main.getCommunicator().write("H");	
 			}
 		});
-		btnSave.setBounds(260, 110, 100, 20);
+		btnSave.setBounds(400, 110, 100, 20);
 		frame.getContentPane().add(btnSave);
 
 		JLabel lblInput = new JLabel("Input:");
@@ -153,12 +158,15 @@ public class Gui {
 	public void updateMode(){
 		Range range = (Range) getSelectedRange().getSelectedItem();
 		Mode mode = (Mode) getSelectedMode().getSelectedItem();
+		SampleFrequency sampleFr = (SampleFrequency) getSampleFrequency().getSelectedItem();
 
-		output.append("Selected mode: " + range.toString() + "  " + mode.toString() + "\n");
+		output.append("Selected mode: " + range.toString() + "  " + mode.toString() + " " + sampleFr.toString() + "\n");
 		Main.getUi().getOutputArea().setCaretPosition(Main.getUi().getOutputArea().getDocument().getLength());
 		Main.getCommunicator().setMode(mode);
 		Main.getCommunicator().setRange(range);
+		Main.getCommunicator().setSampleFr(sampleFr);
 		Main.getCalc().setRange(range);
+		Main.getCalc().setMode(mode);
 
 	}
 
@@ -178,12 +186,15 @@ public class Gui {
 		return rangeSelect;
 	}
 	
+	public JComboBox<SampleFrequency> getSampleFrequency(){
+		return sampleFrequency;
+	}
+	
 	public JFrame getFrame(){
 		return frame;
 	}
 	
 	public Oscilloscope getOscilloscoop(){
-		System.out.println("The oscilloscoop is returned to the code");
 		return chart;
 	}
 	
