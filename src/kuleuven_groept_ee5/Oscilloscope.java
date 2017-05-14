@@ -79,8 +79,9 @@ public class Oscilloscope {
 		JButton btnStart = new JButton(" data");
 		btnStart.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
+				Main.getCalc().setRange(Range.EIGHT);
 				double[] data={-5,-4,-3,-2,-1,0,1,2,3,4,5};
-				changeDataset(data);
+				Main.getCalc().toUserInterface(data);;
 			}
 		});
 		btnStart.setBounds(315, 625, 159, 23);
@@ -238,6 +239,7 @@ public class Oscilloscope {
 		}
 		System.out.println("dataset is changed");
 		JFreeChart lineChart = ChartFactory.createLineChart("GAFA", axis, "Volt", dataset);	
+		chartPanel.setZoomInFactor(zoomX);
 		chartPanel.setChart(lineChart);
 		System.out.println("char is updateted");
 	}
