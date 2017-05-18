@@ -8,6 +8,7 @@ import org.jfree.data.category.DefaultCategoryDataset;
 import javax.swing.JPanel;
 import java.awt.Color;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JSlider;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
@@ -20,6 +21,7 @@ public class Oscilloscope {
 	private JFrame frmOscilloscope;
 	private ChartPanel chartPanel;
 	private JTextField valueZoomX;
+	private JTextField valueMeas;
 	private DefaultCategoryDataset dataset;
 	private double zoomX;
 	private int frequency;
@@ -28,18 +30,22 @@ public class Oscilloscope {
 	private boolean enTrigger;
 	private int trigger;
 	private int triggerSize;
+	private Measurements measure;
+	
 	
 	public JFrame getFrame(){
 		return frmOscilloscope;
 	}
-
-	
 
 	/**
 	 * Create the application.
 	 */
 	public Oscilloscope() {
 		initialize();
+	}
+	
+	public Measurements getMeasure(){
+		return measure;
 	}
 
 	/**
@@ -51,6 +57,7 @@ public class Oscilloscope {
 		enTrigger=false;
 		trigger=0;
 		axis="s";
+		measure= Measurements.DEFAULT;
 		
 		frmOscilloscope = new JFrame();
 		frmOscilloscope.setTitle("Oscilloscope");
@@ -68,7 +75,7 @@ public class Oscilloscope {
 				panel.setBounds(65, 25, 560, 450);
 				frmOscilloscope.getContentPane().add(panel);
 				
-				JFreeChart lineChart = ChartFactory.createLineChart("GAFA", "Temps", "Volt", createDataset());	
+				JFreeChart lineChart = ChartFactory.createLineChart(" ", "T ", "Volt", createDataset());	
 				chartPanel = new ChartPanel( lineChart );
 			    chartPanel.setPreferredSize( new java.awt.Dimension( 560 ,400) );
 			    setContentPane( chartPanel ); 
@@ -195,11 +202,9 @@ public class Oscilloscope {
 		valueZoomX.setBounds(650, 250,70, 23);
 		frmOscilloscope.getContentPane().add(valueZoomX);
 		
-		JRadioButton trigBut=new JRadioButton("Enable tigger",enTrigger);
-		trigBut.setBounds(650,500,100,25);
-		frmOscilloscope.getContentPane().add(trigBut);
 		
-		JSlider slTrigger= new JSlider(JSlider.VERTICAL,1,10,1);
+		
+		JSlider slTrigger= new JSlider(JSlider.HORIZONTAL,1,10,1);
 		
 		slTrigger.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
@@ -211,9 +216,49 @@ public class Oscilloscope {
 				}
 			}
 		});
-		slXScaleZ.setVisible(true);
-		slXScaleZ.setBounds(680, 100, 25, 140);
-		frmOscilloscope.getContentPane().add(slXScaleZ);
+		slTrigger.setVisible(true);
+		slTrigger.setBounds(650, 540, 140, 25);
+		slTrigger.setVisible(false);
+		frmOscilloscope.getContentPane().add(slTrigger);
+		
+		JRadioButton trigBut=new JRadioButton("Enable tigger",enTrigger);
+		trigBut.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+				if(!enTrigger){
+					enTrigger=true;
+					slTrigger.setVisible(true);
+				}
+				else{
+					enTrigger=false;
+					slTrigger.setVisible(false);
+				}
+			}
+		});
+		trigBut.setBounds(650,500,100,25);
+		frmOscilloscope.getContentPane().add(trigBut);
+		
+		valueMeas=new JTextField("nothing measuring");
+		valueMeas.setEditable(false);;
+		valueMeas.setBounds(750,150,100, 25);
+		valueMeas.setVisible(false);
+		frmOscilloscope.getContentPane().add(valueMeas);
+		
+		JComboBox measureBox=new JComboBox(Measurements.values());
+		measureBox.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent arg0) {
+				measure=(Measurements) measureBox.getSelectedItem();
+				if(measure==Measurements.DEFAULT){
+					valueMeas.setVisible(false);
+				}
+				else{
+					valueMeas.setVisible(true);
+				}
+			}
+		
+		});
+		measureBox.setBounds(750,100,100,25);
+		frmOscilloscope.getContentPane().add(measureBox);
+		
 		
 	}
 	
@@ -274,10 +319,60 @@ public class Oscilloscope {
 			}	
 		}
 		
-		JFreeChart lineChart = ChartFactory.createLineChart("GAFA", axis, "Volt", dataset);	
+		JFreeChart lineChart = ChartFactory.createLineChart(" ", axis, "Volt", dataset);	
 		chartPanel.setZoomInFactor(zoomX);
 		chartPanel.setChart(lineChart);
 		chartPanel.zoomInRange( 0,0 );
 	}
 	
+	public void Calculate(double[] data){
+		
+		switch(measure){
+		
+		case MEAN:
+			double mean=0;
+			for(double d:data){
+				mean+=d;
+			}
+			mean=mean/data.length;
+			valueMeas.setText(Double.toString(mean));
+			break;
+			
+		case MAX:
+			double max=-8;
+			for(double d:data){
+				if(d>max){
+					max=d;
+				}
+			}
+			valueMeas.setText(Double.toString(max));
+			break;
+			
+		case MIN:
+			double min=8;
+			for(double d:data){
+				if(d<min){
+					min=d;
+				}
+			}
+			valueMeas.setText(Double.toString(min));
+			break;
+			
+		case PK_TO_PK:
+			double maxpk=-8;
+			double minpk=8;
+			for(double d:data){
+				if(d>maxpk){
+					maxpk=d;
+				}
+				else if(d<minpk){
+					minpk=d;
+				}
+			}
+			double pk_to_pk=maxpk-minpk;
+			valueMeas.setText(Double.toString(pk_to_pk));
+			
+		}
+		
+	}
 }
