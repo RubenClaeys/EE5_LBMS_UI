@@ -3,7 +3,6 @@ package kuleuven_groept_ee5;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
-import org.jfree.chart.plot.Plot;
 import javax.swing.JFrame;
 import org.jfree.data.category.DefaultCategoryDataset;
 import javax.swing.JPanel;
@@ -15,6 +14,7 @@ import javax.swing.event.ChangeEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import javax.swing.JTextField;
+import javax.swing.JRadioButton;
 
 public class Oscilloscope {
 	private JFrame frmOscilloscope;
@@ -25,6 +25,9 @@ public class Oscilloscope {
 	private int frequency;
 	private int[] freqData;
 	private String axis;
+	private boolean enTrigger;
+	private int trigger;
+	private int triggerSize;
 	
 	public JFrame getFrame(){
 		return frmOscilloscope;
@@ -45,6 +48,9 @@ public class Oscilloscope {
 	private void initialize() {
 		zoomX=1;
 		frequency=1;
+		enTrigger=false;
+		trigger=0;
+		axis="s";
 		
 		frmOscilloscope = new JFrame();
 		frmOscilloscope.setTitle("Oscilloscope");
@@ -188,6 +194,27 @@ public class Oscilloscope {
 		valueZoomX.setEditable(false);;
 		valueZoomX.setBounds(650, 250,70, 23);
 		frmOscilloscope.getContentPane().add(valueZoomX);
+		
+		JRadioButton trigBut=new JRadioButton("Enable tigger",enTrigger);
+		trigBut.setBounds(650,500,100,25);
+		frmOscilloscope.getContentPane().add(trigBut);
+		
+		JSlider slTrigger= new JSlider(JSlider.VERTICAL,1,10,1);
+		
+		slTrigger.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+				JSlider source= (JSlider)e.getSource();
+				if(!source.getValueIsAdjusting()){
+					if(enTrigger){
+						trigger=source.getValue();
+					}
+				}
+			}
+		});
+		slXScaleZ.setVisible(true);
+		slXScaleZ.setBounds(680, 100, 25, 140);
+		frmOscilloscope.getContentPane().add(slXScaleZ);
+		
 	}
 	
 	private void changeFreqData(int size) {
@@ -220,22 +247,31 @@ public class Oscilloscope {
 	      dataset = new DefaultCategoryDataset( );
 	      dataset.addValue(1, "Volt" , "0" );
 	      dataset.addValue( -1, "Volt" , "1" );
-//	      dataset.addValue( 0.866 , "Volt" , "0.707" );
-//	      dataset.addValue( 1, "Volt" ,  "1" );
-//	      dataset.addValue(0, "Volt" , "1.3" );
-//	      dataset.addValue( 1.77, "Volt" , "1.5" );
-//	      dataset.addValue( 1.866 , "Volt" , "1.707" );
-//	      dataset.addValue( 2, "Volt" ,  "2" );
 	      return dataset;
 	   }
 	
 	public void changeDataset(double[] data){
-
-		axis="s";
+		boolean trigFound=false;
+		int j=0;
+		triggerSize=data.length;
 		changeFreqData(data.length);
 		dataset = new DefaultCategoryDataset();
-		for(int i=0;i<= data.length-1;i++){
-			dataset.addValue(data[i], "Channel1", Integer.toString(freqData[i]));
+		for(int i=0;i<= triggerSize-1;i++){
+			if(enTrigger){
+				if(trigFound || data[i] >=trigger){
+					if(trigFound=false){
+						if(data.length-i <= triggerSize){
+							triggerSize=data.length-i;
+						}
+					}
+					trigFound=true;
+					dataset.addValue(data[i], "Channel1", Integer.toString(freqData[j]));
+					j++;
+				}
+			}
+			else{
+				dataset.addValue(data[i], "Channel1", Integer.toString(freqData[i]));
+			}	
 		}
 		
 		JFreeChart lineChart = ChartFactory.createLineChart("GAFA", axis, "Volt", dataset);	
@@ -244,16 +280,4 @@ public class Oscilloscope {
 		chartPanel.zoomInRange( 0,0 );
 	}
 	
-	private DefaultCategoryDataset createDataset2( ) {
-	      DefaultCategoryDataset dataset = new DefaultCategoryDataset( );
-	      dataset.addValue(1, "Volt" , "0" );
-	      dataset.addValue( -1, "Volt" , "1" );
-	      dataset.addValue( 2 , "Volt" , "2" );
-	      dataset.addValue( -2, "Volt" ,  "3" );
-//	      dataset.addValue(0, "Volt" , "1.3" );
-//	      dataset.addValue( 1.77, "Volt" , "1.5" );
-//	      dataset.addValue( 1.866 , "Volt" , "1.707" );
-//	      dataset.addValue( 2, "Volt" ,  "2" );
-	      return dataset;
-	   }
 }
