@@ -17,9 +17,9 @@
 			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="C:/Users/Jens/Documents/groepT/JfreeLibrary/lib"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="D:/Groep T/Jaar 4/Semester 2/EE5/commons-math3-3.6.1/commons-math3-3.6.1.jar">
+	<classpathentry kind="lib" path="C:/Users/Jens/Documents/groepT/commons-math3-3.6.1/commons-math3-3.6.1.jar">
 		<attributes>
-			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="D:/Groep T/Jaar 4/Semester 2/EE5/commons-math3-3.6.1"/>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="C:/Users/Jens/Documents/groepT/commons-math3-3.6.1"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="output" path="bin"/>

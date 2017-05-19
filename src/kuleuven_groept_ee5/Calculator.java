@@ -14,6 +14,7 @@ public class Calculator {
 	private ArrayList<Integer> samples = new ArrayList<Integer>();  
 	private boolean freqEnable = false;
 	private int nrOfSamples = 0;
+	private int measCount=0;
 	private double count = 0;
 	
 	
@@ -207,6 +208,11 @@ public class Calculator {
 			case EIGHT:
 				if(!stop && i==0){
 					main.getUi().getOscilloscoop().changeDataset(doubleSamples);
+					measCount++;
+					if(main.getUi().getOscilloscoop().getMeasure() != Measurements.DEFAULT && measCount==10){
+						main.getUi().getOscilloscoop().Calculate(doubleSamples);
+						measCount=0;
+					}
 				}
 				break;
 			case THIRTY:
