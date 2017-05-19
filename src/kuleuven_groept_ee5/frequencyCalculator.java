@@ -1,5 +1,6 @@
 package kuleuven_groept_ee5;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.apache.commons.math3.complex.Complex;
@@ -7,13 +8,60 @@ import org.apache.commons.math3.transform.DftNormalization;
 import org.apache.commons.math3.transform.FastFourierTransformer;
 import org.apache.commons.math3.transform.TransformType;
 
-public class frequencyCalculator {
+public class FrequencyCalculator {
 	
-	private WindowType windowType = WindowType.RECTANGULAR;
+	private Main main = null;
+	private WindowType windowType;
 	private double[] windowWeights;
 	private double windowWeightsSqueredSum = 0;
+	private double[] samples;
+	private ArrayList<Double> tempSamples; 
+	private SampleFrequency sampleFreq;
+	double Fs = 0;
 	
-	public frequencyCalculator(){
+
+
+	
+	public FrequencyCalculator(Main main){
+		this.main = main;
+		tempSamples = new ArrayList<Double>();
+		windowType = WindowType.RECTANGULAR;
+	}
+	
+	
+	public void startReading(int nrOfSamples){
+		main.getCalc().freqConfig(true, nrOfSamples);
+	}
+
+	public void addSamples(double[] block){
+		for(int i=0;i<block.length;i++){
+			tempSamples.add(block[i]);
+		}
+		System.out.println("Block added");
+
+	}
+	
+
+	
+	public void calculate(){
+		samples = new double[tempSamples.size()];
+		for(int i = 0; i < tempSamples.size();i++ ){
+			samples[i] = tempSamples.get(i);
+		}
+		
+		double[] powerSpectrum = new double[samples.length/2];
+		powerSpectrum = calculatePowerSpectrum(samples);
+				
+		setFs();
+				
+		double[] frequencies = new double[samples.length/2];
+		frequencies = getFrequencyArray(samples,Fs);
+		
+		System.out.println("Powerspectrum: ");
+		
+		for(int i =0; i< powerSpectrum.length; i++){
+			System.out.println(frequencies[i] + "-->" + powerSpectrum[i]);
+		}
 		
 	}
 
@@ -135,6 +183,67 @@ public class frequencyCalculator {
 
 	public double square(double x){
 		return x*x;
+	}
+	
+	public void setFs(){
+		switch(sampleFreq){
+		case ONE:
+			Fs = 1;
+			break;
+			
+		case TEN:
+			Fs = 10;
+			break;
+			
+		case HUNDRED:
+			Fs = 100;
+			break;
+			
+		case TWO_H:
+			Fs = 200;
+			break;
+			
+		case FIVE_H:
+			Fs = 500;
+			break;
+			
+		case ONE_K:
+			Fs = 1000;
+			break;
+			
+		case TWO_K:
+			Fs = 2000;
+			break;
+			
+		case FIVE_K:
+			Fs = 5000;
+			break;
+			
+		case TEN_K:
+			Fs = 10000;
+			break;
+			
+		case TWENTYFIVE_K:
+			Fs = 25000;
+			break;
+			
+		case FIFTY_K:
+			Fs = 50000;
+			break;
+			
+		case SEVENTYFIVE_K:
+			Fs = 750000;
+			break;
+			
+		default:
+			Fs = 1;
+			break;
+		}
+		
+	}
+	
+	public void setSampleFreq(SampleFrequency sampleFreq) {
+		this.sampleFreq = sampleFreq;
 	}
 
 }

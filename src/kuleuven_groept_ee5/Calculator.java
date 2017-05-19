@@ -7,24 +7,33 @@ import java.util.ArrayList;
 
 public class Calculator {
 
+	private Main main = null;
 	private Range range;
 	private Mode mode;
 	private Boolean stop=false;
 	private ArrayList<Integer> samples = new ArrayList<Integer>();  
+	private boolean freqEnable = false;
+	private int nrOfSamples = 0;
+	private double count = 0;
+	
+	
+	public Calculator(Main main){
+		this.main = main;
+		mode = Mode.CONTINU;
+		range = Range.EIGHT;
+	}
+
+
+	public void freqConfig(boolean b,int n){
+		freqEnable = b;
+		nrOfSamples = n;
+		count = 0;
+	}
 	
 
-	public void setRange(Range range) {
-		this.range = range;
-	}
-	
-	public void setMode(Mode mode){
-		this.mode = mode;
-	}
 
-	public Calculator(){
-		mode =(Mode) Main.getUi().getSelectedMode().getSelectedItem();
-		range = (Range) Main.getUi().getSelectedRange().getSelectedItem();
-	}
+
+
 	
 	public void addSample(int sample){
 		
@@ -47,17 +56,14 @@ public class Calculator {
 
 	
 	public void calcSingle(int sample){
-		System.out.println(mode.toString());
-		System.out.println(range.toString());
-		System.out.println(sample);
+
 		double voltage = 0;
 		
 		switch(range){
 		case EIGHT:
 			voltage = (((double)sample)/255)*8;
 
-			System.out.println(sample);
-			System.out.println(voltage);
+
 			if(voltage>=4.016){
 				
 				voltage = ((voltage-4.016)/3.2)*8;
@@ -103,21 +109,19 @@ public class Calculator {
 		}
 		
 		double voltageRounded = round(voltage, 3);
-		System.out.println(voltage);
-		System.out.println(voltageRounded);
-		Main.getUi().getOutputArea().setForeground(Color.black);
+		main.getUi().getOutputArea().setForeground(Color.black);
 		switch(range){
 			case FIVE:
 			case EIGHT:
 			case THIRTY:
-				Main.getUi().getOutputArea().append(voltageRounded + "V" + "\n");
+				main.getUi().getOutputArea().append(voltageRounded + "V" + "\n");
 				break;
 			case SEVENFIFTY:
 				voltageRounded = round(voltage, 1);
-				Main.getUi().getOutputArea().append(voltageRounded + "mV" + "\n");
+				main.getUi().getOutputArea().append(voltageRounded + "mV" + "\n");
 				break;
 			default: 
-				Main.getUi().getOutputArea().append(voltageRounded + "V" + "\n");
+				main.getUi().getOutputArea().append(voltageRounded + "V" + "\n");
 				System.out.println("Voltage range not selected (default: append V)" + "\n");
 				break;
 		}
@@ -182,6 +186,17 @@ public class Calculator {
 			doubleSamples[i] = voltage;	
 		}
 		toUserInterface(doubleSamples);
+		if(freqEnable){
+			if(count < nrOfSamples){
+				main.getFreqCalc().addSamples(doubleSamples);
+				count += doubleSamples.length;
+			}else{
+				main.getFreqChart().getBtnCalc().setEnabled(true);
+				count = 0;
+				freqEnable = false;
+			}
+			
+		}
 	}
 	
 	
@@ -191,22 +206,22 @@ public class Calculator {
 			case FIVE:
 			case EIGHT:
 				if(!stop && i==0){
-					Main.getUi().getOscilloscoop().changeDataset(doubleSamples);
+					main.getUi().getOscilloscoop().changeDataset(doubleSamples);
 				}
 				break;
 			case THIRTY:
-				Main.getUi().getOutputArea().append(round(doubleSamples[i],3) + "V"  + "\n");
+				main.getUi().getOutputArea().append(round(doubleSamples[i],3) + "V"  + "\n");
 				break;
 			case SEVENFIFTY:
-				Main.getUi().getOutputArea().append(round(doubleSamples[i],1) + "mV"  + "\n");
+				main.getUi().getOutputArea().append(round(doubleSamples[i],1) + "mV"  + "\n");
 				break;
 			default: 
 				System.out.println("No range selected --> in default of toUserInteface() " );
 				break;		
 			}
-			Main.getUi().getOutputArea().setCaretPosition(Main.getUi().getOutputArea().getDocument().getLength());
+			main.getUi().getOutputArea().setCaretPosition(main.getUi().getOutputArea().getDocument().getLength());
 		}
-		System.out.println("chart updated");
+		
 	}
 	
 	public double round(double value, int places) {
@@ -216,6 +231,18 @@ public class Calculator {
 		BigDecimal bd = new BigDecimal(value);
 		bd = bd.setScale(places, RoundingMode.HALF_UP);
 		return bd.doubleValue();
+	}
+	
+	public void setMain(Main main) {
+		this.main = main;
+	}
+	
+	public void setRange(Range range) {
+		this.range = range;
+	}
+	
+	public void setMode(Mode mode){
+		this.mode = mode;
 	}
 
 	public void setStop(boolean temp){

@@ -1,5 +1,6 @@
 package kuleuven_groept_ee5;
 
+
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
@@ -17,6 +18,8 @@ import java.awt.event.ActionEvent;
 import javax.swing.JTextField;
 
 public class Oscilloscope {
+	
+	private Main main = null;
 	private JFrame frmOscilloscope;
 	private ChartPanel chartPanel;
 	private JTextField valueZoomX;
@@ -26,18 +29,18 @@ public class Oscilloscope {
 	private int[] freqData;
 	private String axis;
 	
+	/**
+	 * Create the application.
+	 */
+	public Oscilloscope(Main main) {
+		this.main = main;
+		initialize();
+	}
+	
 	public JFrame getFrame(){
 		return frmOscilloscope;
 	}
 
-	
-
-	/**
-	 * Create the application.
-	 */
-	public Oscilloscope() {
-		initialize();
-	}
 
 	/**
 	 * Initialize the contents of the frame.
@@ -48,7 +51,7 @@ public class Oscilloscope {
 		
 		frmOscilloscope = new JFrame();
 		frmOscilloscope.setTitle("Oscilloscope");
-		frmOscilloscope.setBounds(770, 100, 800, 700);
+		frmOscilloscope.setBounds(650, 0, 800, 700);
 		frmOscilloscope.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frmOscilloscope.getContentPane().setLayout(null);
 		
@@ -94,7 +97,7 @@ public class Oscilloscope {
 		JButton btnStop = new JButton("STOP");
 		btnStop.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				Main.getCalc().setStop(!Main.getCalc().getStop());
+				main.getCalc().setStop(!main.getCalc().getStop());
 			}
 		});
 		btnStop.setBounds(500, 625, 159, 23);

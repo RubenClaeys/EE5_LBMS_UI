@@ -14,6 +14,7 @@ import javax.swing.ScrollPaneConstants;
 
 public class Gui {
 
+	private Main main = null;
 	private JFrame frame;
 	private JTextField input;
 	private JTextArea output;
@@ -22,14 +23,17 @@ public class Gui {
 	private JComboBox<Range> rangeSelect;
 	private JComboBox<SampleFrequency> sampleFrequency;
 	private Oscilloscope chart;
+	private FrequencyChart freq;
+	
 
-	public Gui() {
+	public Gui(Main main) {
+		this.main = main;
 		initialize();
 	}
 
 	private void initialize() {
 		frame = new JFrame();
-		frame.setBounds(100, 100, 660, 500);
+		frame.setBounds(0, 0, 660, 500);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(null);
 
@@ -41,7 +45,7 @@ public class Gui {
 		btnSearch.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				Main.getCommunicator().searchForPorts();
+				main.getCommunicator().searchForPorts();
 				
 			}
 		});
@@ -56,7 +60,7 @@ public class Gui {
 		btnConnect.addActionListener(new ActionListener() {
 
 			public void actionPerformed(ActionEvent arg0) {
-				Main.getCommunicator().connect();
+				main.getCommunicator().connect();
 			}
 		});
 		btnConnect.setBounds(240, 40, 100, 20);
@@ -66,7 +70,7 @@ public class Gui {
 		btnDisconnect.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				Main.getCommunicator().disconnect();
+				main.getCommunicator().disconnect();
 
 			}
 		});
@@ -86,6 +90,7 @@ public class Gui {
 		frame.getContentPane().add(rangeSelect);
 		
 		sampleFrequency = new JComboBox<>(SampleFrequency.values());
+		sampleFrequency.setSelectedItem(SampleFrequency.ONE_K);
 		sampleFrequency.setBounds(260,110,120,20);
 		frame.getContentPane().add(sampleFrequency);
 		
@@ -93,7 +98,7 @@ public class Gui {
 		btnSave.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				updateMode();
-				Main.getCommunicator().write("H");	
+				main.getCommunicator().write("H");	
 			}
 		});
 		btnSave.setBounds(400, 110, 100, 20);
@@ -107,7 +112,7 @@ public class Gui {
 		input.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				Main.getCommunicator().write(input.getText());
+				main.getCommunicator().write(input.getText());
 			}
 		});
 		input.setBounds(20, 180, 100, 20);
@@ -117,7 +122,7 @@ public class Gui {
 		JButton btnSend = new JButton("Send");
 		btnSend.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				Main.getCommunicator().write(input.getText());
+				main.getCommunicator().write(input.getText());
 			}
 		});
 		btnSend.setBounds(130, 180, 100, 20);
@@ -141,7 +146,7 @@ public class Gui {
 		btnChart.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent arg0) {
 				try {
-					chart = new Oscilloscope();
+					chart = new Oscilloscope(main);
 					chart.getFrame().setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -151,6 +156,20 @@ public class Gui {
 		btnChart.setVisible(true);
 		btnChart.setBounds(450, 250, 120, 20);
 		frame.getContentPane().add(btnChart);
+		
+		JButton btnFrequency = new JButton("Frequency chart");
+		btnFrequency.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent arg0) {
+				FrequencyChart freq = new FrequencyChart(main);
+				
+				freq.getFrame().setVisible(true);
+			}
+		});
+		btnFrequency.setVisible(true);
+		btnFrequency.setBounds(450, 280, 120, 20);
+		frame.getContentPane().add(btnFrequency);
+		
+		
 	}
 	
 
@@ -161,15 +180,19 @@ public class Gui {
 		SampleFrequency sampleFr = (SampleFrequency) getSampleFrequency().getSelectedItem();
 
 		output.append("Selected mode: " + range.toString() + "  " + mode.toString() + " " + sampleFr.toString() + "\n");
-		Main.getUi().getOutputArea().setCaretPosition(Main.getUi().getOutputArea().getDocument().getLength());
-		Main.getCommunicator().setMode(mode);
-		Main.getCommunicator().setRange(range);
-		Main.getCommunicator().setSampleFr(sampleFr);
-		Main.getCalc().setRange(range);
-		Main.getCalc().setMode(mode);
-
+		main.getUi().getOutputArea().setCaretPosition(main.getUi().getOutputArea().getDocument().getLength());
+		main.getCommunicator().setMode(mode);
+		main.getCommunicator().setRange(range);
+		main.getCommunicator().setSampleFr(sampleFr);
+		main.getCalc().setRange(range);
+		main.getCalc().setMode(mode);
+		main.getFreqCalc().setSampleFreq(sampleFr);
 	}
 
+	public void setMain(Main main) {
+		this.main = main;
+	}
+	
 	public JTextArea getOutputArea() {
 		return output;
 	}

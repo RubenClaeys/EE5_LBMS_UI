@@ -18,6 +18,7 @@ import gnu.io.SerialPort;
 
 public class SerialCommunicator {
 	
+	private Main main = null;
 	private Enumeration<CommPortIdentifier> ports = null;
 	private HashMap<String, CommPortIdentifier> portMap = new HashMap<String, CommPortIdentifier>();
 	private CommPortIdentifier selectedPortIdentifier = null;
@@ -27,18 +28,21 @@ public class SerialCommunicator {
 	private Range range = null;
 	private Mode mode = null;
 	private SampleFrequency sampleFr = null;
-	private BlockingQueue<Integer> queue = null;
-	private ArrayList<Integer> samplesAD = new ArrayList<Integer>();  
+	private BlockingQueue<Integer> queue = null;	
 	private int capacity = 100;
-	private int i = 0;
 
 	private volatile boolean shutdown = false;
 	
-	public SerialCommunicator(){
+	
+
+	
+	public SerialCommunicator(Main main){
+		this.main = main;
 		searchForPorts();
-		mode =(Mode) Main.getUi().getSelectedMode().getSelectedItem();
-		range = (Range) Main.getUi().getSelectedRange().getSelectedItem();
-		sampleFr = (SampleFrequency) Main.getUi().getSampleFrequency().getSelectedItem();
+		mode = Mode.CONTINU;
+		range = Range.EIGHT;
+		sampleFr = SampleFrequency.ONE_K;
+		
 	}
 	
 	// Searches for ports and displays them in combobox
@@ -49,7 +53,7 @@ public class SerialCommunicator {
 			CommPortIdentifier currentPort = (CommPortIdentifier) ports.nextElement();
 
 			if (currentPort.getPortType() == CommPortIdentifier.PORT_SERIAL) {
-				Main.getUi().getSelectedPort().addItem(currentPort.getName());
+				main.getUi().getSelectedPort().addItem(currentPort.getName());
 				portMap.put(currentPort.getName(), currentPort);
 				
 			}
@@ -59,7 +63,7 @@ public class SerialCommunicator {
 	// Opens the selected serial port and converts it to a serialPort object
 	// Creates an inputStream and OutputStream object for the serialPort
 	public void connect() {
-		String selectedPort = (String) Main.getUi().getSelectedPort().getSelectedItem();
+		String selectedPort = (String) main.getUi().getSelectedPort().getSelectedItem();
 		selectedPortIdentifier = portMap.get(selectedPort);
 
 		CommPort commPort = null;
@@ -68,9 +72,9 @@ public class SerialCommunicator {
 			commPort = selectedPortIdentifier.open("PIC", 1000);
 			serialPort = (SerialPort) commPort;
 
-			Main.getUi().getOutputArea().setForeground(Color.black);
-			Main.getUi().getOutputArea().append(selectedPort + " opened successfully" + "\n");
-			Main.getUi().getOutputArea().setCaretPosition(Main.getUi().getOutputArea().getDocument().getLength());
+			main.getUi().getOutputArea().setForeground(Color.black);
+			main.getUi().getOutputArea().append(selectedPort + " opened successfully" + "\n");
+			main.getUi().getOutputArea().setCaretPosition(main.getUi().getOutputArea().getDocument().getLength());
 
 			inputStream = serialPort.getInputStream();
 			outputStream = serialPort.getOutputStream();
@@ -79,13 +83,13 @@ public class SerialCommunicator {
 			
 			
 		} catch (PortInUseException e) {
-			Main.getUi().getOutputArea().setForeground(Color.red);
-			Main.getUi().getOutputArea().append("Port is in use (" + e.toString() + ")" + "\n");
-			Main.getUi().getOutputArea().setCaretPosition(Main.getUi().getOutputArea().getDocument().getLength());
+			main.getUi().getOutputArea().setForeground(Color.red);
+			main.getUi().getOutputArea().append("Port is in use (" + e.toString() + ")" + "\n");
+			main.getUi().getOutputArea().setCaretPosition(main.getUi().getOutputArea().getDocument().getLength());
 		} catch (Exception e) {
-			Main.getUi().getOutputArea().setForeground(Color.red);
-			Main.getUi().getOutputArea().append("Failed to open " + selectedPort + " (" + e.toString() + ")" + "\n");
-			Main.getUi().getOutputArea().setCaretPosition(Main.getUi().getOutputArea().getDocument().getLength());
+			main.getUi().getOutputArea().setForeground(Color.red);
+			main.getUi().getOutputArea().append("Failed to open " + selectedPort + " (" + e.toString() + ")" + "\n");
+			main.getUi().getOutputArea().setCaretPosition(main.getUi().getOutputArea().getDocument().getLength());
 		}
 	}
 	
@@ -99,13 +103,13 @@ public class SerialCommunicator {
 			inputStream.close();
 			outputStream.close();
 
-			Main.getUi().getOutputArea().setForeground(Color.black);
-			Main.getUi().getOutputArea().append("Disconnected " + "\n");
-			Main.getUi().getOutputArea().setCaretPosition(Main.getUi().getOutputArea().getDocument().getLength());
+			main.getUi().getOutputArea().setForeground(Color.black);
+			main.getUi().getOutputArea().append("Disconnected " + "\n");
+			main.getUi().getOutputArea().setCaretPosition(main.getUi().getOutputArea().getDocument().getLength());
 
 		} catch (Exception e) {
-			Main.getUi().getOutputArea().append("Failed to close " + serialPort.getName() + "(" + e.toString() + ")" + "\n");
-			Main.getUi().getOutputArea().setCaretPosition(Main.getUi().getOutputArea().getDocument().getLength());
+			main.getUi().getOutputArea().append("Failed to close " + serialPort.getName() + "(" + e.toString() + ")" + "\n");
+			main.getUi().getOutputArea().setCaretPosition(main.getUi().getOutputArea().getDocument().getLength());
 		}
 	}
 	
@@ -152,19 +156,10 @@ public class SerialCommunicator {
 				try {
 					
 					int data;
-					long begin =0;
-					long end = 0;
+
 					
 					while((data = inputStream.read()) > -1  ) {
-						if(i == 0){begin = System.currentTimeMillis();}
-						i++;
-						if(i == 10){
-							end = System.currentTimeMillis();
-							long time = (end - begin)/10;
-							long freq = 1/time;	
-							Main.getUi().getOutputArea().append(freq + "\n");
-						}
-						System.out.println(data);
+
 						if(queue.size() < capacity)
 							queue.add(data);
 							break;
@@ -173,9 +168,9 @@ public class SerialCommunicator {
 					
 				}
 				catch (IOException e) {
-					Main.getUi().getOutputArea().setForeground(Color.red);
-					Main.getUi().getOutputArea().append("There was an error while reading data.. (" + e.toString() + ")" + "\n");
-					Main.getUi().getOutputArea().setCaretPosition(Main.getUi().getOutputArea().getDocument().getLength());
+					main.getUi().getOutputArea().setForeground(Color.red);
+					main.getUi().getOutputArea().append("There was an error while reading data.. (" + e.toString() + ")" + "\n");
+					main.getUi().getOutputArea().setCaretPosition(main.getUi().getOutputArea().getDocument().getLength());
 				}
 			}
 	}
@@ -187,7 +182,7 @@ public class SerialCommunicator {
 		
 		while(!shutdown){
 			int sample = queue.take();
-			Main.getCalc().addSample(sample);
+			main.getCalc().addSample(sample);
 		}
 	}
 	
@@ -212,9 +207,9 @@ public class SerialCommunicator {
 			}
 
 		} catch (IOException e) {
-			Main.getUi().getOutputArea().setForeground(Color.red);
-			Main.getUi().getOutputArea().append("There was an error while writing data.. (" + e.toString() + ")" + "\n");
-			Main.getUi().getOutputArea().setCaretPosition(Main.getUi().getOutputArea().getDocument().getLength());
+			main.getUi().getOutputArea().setForeground(Color.red);
+			main.getUi().getOutputArea().append("There was an error while writing data.. (" + e.toString() + ")" + "\n");
+			main.getUi().getOutputArea().setCaretPosition(main.getUi().getOutputArea().getDocument().getLength());
 		}
 	}
 	
