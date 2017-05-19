@@ -1,5 +1,6 @@
 package kuleuven_groept_ee5;
 
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -8,6 +9,8 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+
+import org.jfree.chart.ChartFactory;
 
 public class FrequencyChart {
 	
@@ -70,12 +73,35 @@ public class FrequencyChart {
 			public void actionPerformed(ActionEvent e) {
 				main.getFreqCalc().calculate();
 				
+			//	createFrequencyChart();
+				
+				
+				
 			}
 		});
 		btnCalc.setEnabled(false);
 		btnCalc.setBounds(10, 40, 100, 20);
 		frame.getContentPane().add(btnCalc);
+		
+		
+		
 	}
+	
+//	public void createFrequencyChart(){
+//		main.getFreqCalc().calculate();
+//		
+//		double[] samples = main.getFreqCalc().getSamples();
+//		
+//		double[] powerSpectrum = main.getFreqCalc().calculatePowerSpectrum(samples);
+//		double[] frequencyArray = main.getFreqCalc().getFrequencyArray(samples, main.getFreqCalc().getFs());
+//		
+//		JPanel panel = new JPanel();
+//		panel.setBackground(Color.WHITE);
+//		panel.setBounds(65, 25, 560, 450);
+//		frame.getContentPane().add(panel);
+//		
+//		JFreeChart lineChart = ChartFactory.createLineChart("Powerspectrum", "Frequency", "Amplitude", dataset);
+//	}
 
 
 }

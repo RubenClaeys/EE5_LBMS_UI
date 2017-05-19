@@ -64,6 +64,7 @@ public class Oscilloscope {
 		frequency=1;
 		enTrigger=false;
 		trigger=0;
+		triggerSize=0;
 		axis="s";
 		measure= Measurements.DEFAULT;
 		
@@ -100,9 +101,9 @@ public class Oscilloscope {
 		JButton btnStart = new JButton(" data");
 		btnStart.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				Main.getCalc().setRange(Range.EIGHT);
+				main.getCalc().setRange(Range.EIGHT);
 				double[] data={-5,-4,-3,-2,-1,0,1,2,3,4,5};
-				Main.getCalc().toUserInterface(data);;
+				main.getCalc().toUserInterface(data);;
 			}
 		});
 		btnStart.setBounds(315, 625, 159, 23);
@@ -220,6 +221,7 @@ public class Oscilloscope {
 				if(!source.getValueIsAdjusting()){
 					if(enTrigger){
 						trigger=source.getValue();
+						System.out.println(trigger);
 					}
 				}
 			}
@@ -306,15 +308,19 @@ public class Oscilloscope {
 	public void changeDataset(double[] data){
 		boolean trigFound=false;
 		int j=0;
-		triggerSize=data.length;
+		if(triggerSize==0){
+			triggerSize=data.length;
+			System.out.println(triggerSize);
+		}
 		changeFreqData(data.length);
 		dataset = new DefaultCategoryDataset();
 		for(int i=0;i<= triggerSize-1;i++){
 			if(enTrigger){
-				if(trigFound || data[i] >=trigger){
-					if(trigFound=false){
+				if(trigFound || data[i] ==trigger){
+					if(trigFound==false){
 						if(data.length-i <= triggerSize){
 							triggerSize=data.length-i;
+							System.out.println(triggerSize);
 						}
 					}
 					trigFound=true;

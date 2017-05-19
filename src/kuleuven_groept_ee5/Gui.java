@@ -161,7 +161,7 @@ public class Gui {
 		btnFrequency.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent arg0) {
 				FrequencyChart freq = new FrequencyChart(main);
-				
+				main.setFreqChart(freq);
 				freq.getFrame().setVisible(true);
 			}
 		});

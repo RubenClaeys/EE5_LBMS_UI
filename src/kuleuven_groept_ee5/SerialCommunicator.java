@@ -33,13 +33,11 @@ public class SerialCommunicator {
 
 	private volatile boolean shutdown = false;
 	
-	
-
-	
+		
 	public SerialCommunicator(Main main){
 		this.main = main;
 		searchForPorts();
-		mode = Mode.CONTINU;
+		mode = Mode.SINGLE;
 		range = Range.EIGHT;
 		sampleFr = SampleFrequency.ONE_K;
 		
@@ -79,8 +77,10 @@ public class SerialCommunicator {
 			inputStream = serialPort.getInputStream();
 			outputStream = serialPort.getOutputStream();
 			
-			startThreads();
+			write("I");
 			
+			startThreads();
+		
 			
 		} catch (PortInUseException e) {
 			main.getUi().getOutputArea().setForeground(Color.red);
@@ -154,18 +154,13 @@ public class SerialCommunicator {
 		while(!shutdown){
 //			System.out.println("Thread producer: " + Thread.currentThread().getName());
 				try {
-					
-					int data;
-
+					int data;		
 					
 					while((data = inputStream.read()) > -1  ) {
-
 						if(queue.size() < capacity)
 							queue.add(data);
 							break;
 						}
-					
-					
 				}
 				catch (IOException e) {
 					main.getUi().getOutputArea().setForeground(Color.red);
@@ -190,7 +185,7 @@ public class SerialCommunicator {
 	//This is done in the event-dispatch thread
 	public void write(String data) {
 		try {
-			if (data.equals("A")) {	
+			if (data.equals("A") | data.equals("I")) {	
 				byte[] buffer = data.getBytes();
 				outputStream.write(buffer, 0, buffer.length);
 			}
@@ -201,7 +196,9 @@ public class SerialCommunicator {
 				buffer[1] = generateHeader1();
 				buffer[2] = generateHeader2();
 				outputStream.write(buffer, 0, buffer.length);
-			} else {
+			} 
+			
+			else {
 				byte[] buffer = data.getBytes();
 				outputStream.write(buffer, 0, buffer.length);
 			}

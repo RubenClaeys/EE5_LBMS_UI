@@ -64,6 +64,15 @@ public class FrequencyCalculator {
 		}
 		
 	}
+	
+	
+	public double[] getSamples(){
+		samples = new double[tempSamples.size()];
+		for(int i = 0; i < tempSamples.size();i++ ){
+			samples[i] = tempSamples.get(i);
+		}
+		return samples;
+	}
 
 	public double[] getFrequencyArray(double[] samples, double sampleFrequency){
 		int size = getPowerOfTwo(samples.length);
@@ -188,51 +197,51 @@ public class FrequencyCalculator {
 	public void setFs(){
 		switch(sampleFreq){
 		case ONE:
-			Fs = 1;
+			Fs = 13.24;
 			break;
 			
 		case TEN:
-			Fs = 10;
+			Fs = 13.24;
 			break;
 			
 		case HUNDRED:
-			Fs = 100;
+			Fs = 101.4;
 			break;
 			
 		case TWO_H:
-			Fs = 200;
+			Fs = 198.7;
 			break;
 			
 		case FIVE_H:
-			Fs = 500;
+			Fs = 487.8;
 			break;
 			
 		case ONE_K:
-			Fs = 1000;
+			Fs = 957.8;
 			break;
 			
 		case TWO_K:
-			Fs = 2000;
+			Fs = 1847.5;
 			break;
 			
 		case FIVE_K:
-			Fs = 5000;
+			Fs = 4;
 			break;
 			
 		case TEN_K:
-			Fs = 10000;
+			Fs = 7.08;
 			break;
 			
 		case TWENTYFIVE_K:
-			Fs = 25000;
+			Fs = 13.62;
 			break;
 			
 		case FIFTY_K:
-			Fs = 50000;
+			Fs = 20.08;
 			break;
 			
 		case SEVENTYFIVE_K:
-			Fs = 750000;
+			Fs = 20.08;
 			break;
 			
 		default:
@@ -242,8 +251,16 @@ public class FrequencyCalculator {
 		
 	}
 	
+	public double getFs(){
+		return Fs;
+	}
+	
+	
+	
 	public void setSampleFreq(SampleFrequency sampleFreq) {
 		this.sampleFreq = sampleFreq;
 	}
+	
+	
 
 }
