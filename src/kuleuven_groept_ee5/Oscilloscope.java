@@ -34,6 +34,7 @@ public class Oscilloscope {
 	private int trigger;
 	private int triggerSize;
 	private Measurements measure;
+	private double[] setdata;
 	
 	
 	/**
@@ -68,6 +69,9 @@ public class Oscilloscope {
 		//init for triggering
 		boolean trigFound=false;
 		int j=0;
+		if(setdata.length==0){
+			setdata=data;
+		}
 		if(triggerSize==0){
 			triggerSize=data.length;
 		}
@@ -80,12 +84,18 @@ public class Oscilloscope {
 			if(enTrigger){
 				if(trigFound || (data[i] >=trigger && data[i-1] < trigger)){
 					if(trigFound=false){
-						if(data.length-i <= triggerSize){
+						if(data.length-i <= triggerSize && data.length-i> data.length/2){
 							triggerSize=data.length-i;
 						}
 					}
+					if(data[i]>=(setdata[j]-0.25) && data[i]<=(setdata[i]+0.25)){
+						setdata[j]=data[i];
+					}
+					else{
+						setdata[j]=(setdata[j]+data[i])/2;
+					}
 					trigFound=true;
-					dataset.addValue(data[i], "Channel1", Integer.toString(freqData[j]));
+					dataset.addValue(setdata[j], "Channel1", Integer.toString(freqData[j]));
 					j++;
 				}
 			}
@@ -173,6 +183,7 @@ public class Oscilloscope {
 		triggerSize=0;
 		axis="s";
 		measure= Measurements.DEFAULT;
+		setdata[0]=0;
 		
 		//making a new frame for the osciloscoop
 		frmOscilloscope = new JFrame();
